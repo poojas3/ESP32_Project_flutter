@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "981563697443",
+    "firebase_url": "https://esp32-flutter-project.firebaseio.com",
+    "project_id": "esp32-flutter-project",
+    "storage_bucket": "esp32-flutter-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:981563697443:android:5f74ddc59488d527b34496",
+        "android_client_info": {
+          "package_name": "com.sunnywang.esp32_project_flutter_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "981563697443-8c3jr998sheb9fk46d76tugtmmq1hv7p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBt4IYraRg1jlq3FdhhMnWus-KGImZNTbg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "981563697443-8c3jr998sheb9fk46d76tugtmmq1hv7p.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "981563697443-jt5p1741qb5b85brajh9fpr8kuid7ld7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.sunnywang.esp32ProjectFlutterApp"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
