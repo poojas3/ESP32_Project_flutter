@@ -6,8 +6,11 @@ import 'package:esp32_project_flutter_app/components/CircleProgress.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:esp32_project_flutter_app/ult.dart';
 import 'dart:async';
-//import 'package:flutter_audio_player/flutter_audio_player.dart';
+import 'package:audioplayers/audio_cache.dart';
+import 'package:audioplayers/audioplayers.dart';
 
+//import 'package:flutter_audio_player/flutter_audio_player.dart';
+typedef void OnError(Exception exception);
 //final _firestore = Firestore.instance;
 FirebaseUser loggedInUser;
 DatabaseReference _distRef =
@@ -33,18 +36,39 @@ class _UltraScreenState extends State<UltraScreen>
   String distWarnText;
   Timer _timer;
   String _distAudioName;
+  Duration _duration = new Duration();
+  Duration _position = new Duration();
+  AudioPlayer advancedPlayer;
+  AudioCache audioCache;
 
   @override
   void initState() {
     distWarnText = "Distance remind soon...";
-    _distAudioName = "audios/4m.m4a";
+    _distAudioName = 'audios/4m.m4a';
+    initPlayer();
     _timer = Timer.periodic(Duration(seconds: 10), (timer) {
-      setState(() {});
+      setState(() {
+        print(_distAudioName);
+        audioCache.play(_distAudioName);
+      });
     });
     super.initState();
 
     isLoading = true;
     getCurrentUser();
+  }
+
+  void initPlayer() {
+    advancedPlayer = new AudioPlayer();
+    audioCache = new AudioCache(fixedPlayer: advancedPlayer);
+
+    advancedPlayer.durationHandler = (d) => setState(() {
+          _duration = d;
+        });
+
+    advancedPlayer.positionHandler = (p) => setState(() {
+          _position = p;
+        });
   }
 
   @override
@@ -130,7 +154,7 @@ class _UltraScreenState extends State<UltraScreen>
                               snapshot.data.snapshot.value['Distance']);
                           print("Distance: ${_dist.data}");
                           _setAudioName(_dist);
-                          print(_distAudioName);
+                          //print(_distAudioName);
                           //_buildAudioPlay();
                           return _distanceLayout(_dist);
                         } else {
@@ -197,16 +221,17 @@ class _UltraScreenState extends State<UltraScreen>
     );
   }
 
-  _setAudioName(ULT _ult) {
+  _setAudioName(ULT _ult) async {
     if (_ult.data > 3.0 && _ult.data < 4.0) {
-      _distAudioName = "audios/4m.m4a";
+      _distAudioName = '4m.m4a';
     } else if (_ult.data >= 2.0 && _ult.data <= 3.0) {
-      _distAudioName = "audios/3m.m4a";
+      _distAudioName = '3m.mp3';
     } else if (_ult.data >= 1.0 && _ult.data < 2.0) {
-      _distAudioName = "audios/2m.m4a";
+      _distAudioName = '2m.m4a';
     } else if (_ult.data > 0.0 && _ult.data < 1.0) {
-      _distAudioName = "audios/1m.m4a";
+      _distAudioName = '1m.m4a';
     }
+    //await audioCache.play(_distAudioName);
   }
 
 //  Future<dynamic> _buildAudioPlay() async {
