@@ -223,13 +223,13 @@ class _UltraScreenState extends State<UltraScreen>
 
   _setAudioName(ULT _ult) async {
     if (_ult.data > 3.0 && _ult.data < 4.0) {
-      _distAudioName = '4m.m4a';
+      _distAudioName = '4mr.mp3';
     } else if (_ult.data >= 2.0 && _ult.data <= 3.0) {
-      _distAudioName = '3m.mp3';
+      _distAudioName = '3mr.mp3';
     } else if (_ult.data >= 1.0 && _ult.data < 2.0) {
-      _distAudioName = '2m.m4a';
+      _distAudioName = '2mr.mp3';
     } else if (_ult.data > 0.0 && _ult.data < 1.0) {
-      _distAudioName = '1m.m4a';
+      _distAudioName = '1mr.mp3';
     }
     //await audioCache.play(_distAudioName);
   }
