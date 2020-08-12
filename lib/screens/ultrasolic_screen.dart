@@ -8,6 +8,7 @@ import 'package:esp32_project_flutter_app/ult.dart';
 import 'dart:async';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 //import 'package:flutter_audio_player/flutter_audio_player.dart';
 typedef void OnError(Exception exception);
@@ -27,6 +28,7 @@ class _UltraScreenState extends State<UltraScreen>
     with SingleTickerProviderStateMixin {
   final messageTextController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FlutterTts flutterTts = FlutterTts();
 
   String messageText;
 
@@ -49,7 +51,8 @@ class _UltraScreenState extends State<UltraScreen>
     _timer = Timer.periodic(Duration(seconds: 10), (timer) {
       setState(() {
         print(_distAudioName);
-        audioCache.play(_distAudioName);
+        _speak(_distAudioName);
+        //audioCache.play(_distAudioName);
       });
     });
     super.initState();
@@ -223,15 +226,23 @@ class _UltraScreenState extends State<UltraScreen>
 
   _setAudioName(ULT _ult) async {
     if (_ult.data > 3.0 && _ult.data < 4.0) {
-      _distAudioName = '4mr.mp3';
+      _distAudioName = "4m range";
+      //_distAudioName = '4mr.mp3';
     } else if (_ult.data >= 2.0 && _ult.data <= 3.0) {
-      _distAudioName = '3mr.mp3';
+      _distAudioName = "3m range";
+      //_distAudioName = '3mr.mp3';
     } else if (_ult.data >= 1.0 && _ult.data < 2.0) {
-      _distAudioName = '2mr.mp3';
+      _distAudioName = "2m range";
+      //_distAudioName = '2mr.mp3';
     } else if (_ult.data > 0.0 && _ult.data < 1.0) {
-      _distAudioName = '1mr.mp3';
+      _distAudioName = "1m range";
+      //_distAudioName = '1mr.mp3';
     }
     //await audioCache.play(_distAudioName);
+  }
+
+  Future _speak(String wordtosay) async {
+    await flutterTts.speak(wordtosay);
   }
 
 //  Future<dynamic> _buildAudioPlay() async {
