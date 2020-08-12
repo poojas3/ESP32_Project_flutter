@@ -355,6 +355,10 @@ PODS:
   - path_provider (0.0.1):
     - Flutter
   - PromisesObjC (1.2.9)
+  - speech_to_text (0.0.1):
+    - Flutter
+    - Try
+  - Try (2.1.1)
 
 DEPENDENCIES:
   - audioplayers (from `.symlinks/plugins/audioplayers/ios`)
@@ -365,6 +369,7 @@ DEPENDENCIES:
   - Flutter (from `Flutter`)
   - flutter_tts (from `.symlinks/plugins/flutter_tts/ios`)
   - path_provider (from `.symlinks/plugins/path_provider/ios`)
+  - speech_to_text (from `.symlinks/plugins/speech_to_text/ios`)
 
 SPEC REPOS:
   trunk:
@@ -387,6 +392,7 @@ SPEC REPOS:
     - leveldb-library
     - nanopb
     - PromisesObjC
+    - Try
 
 EXTERNAL SOURCES:
   audioplayers:
@@ -405,6 +411,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_tts/ios"
   path_provider:
     :path: ".symlinks/plugins/path_provider/ios"
+  speech_to_text:
+    :path: ".symlinks/plugins/speech_to_text/ios"
 
 SPEC CHECKSUMS:
   abseil: 6c8eb7892aefa08d929b39f9bb108e5367e3228f
@@ -434,6 +442,8 @@ SPEC CHECKSUMS:
   nanopb: c43f40fadfe79e8b8db116583945847910cbabc9
   path_provider: abfe2b5c733d04e238b0d8691db0cfd63a27a93c
   PromisesObjC: b48e0338dbbac2207e611750777895f7a5811b75
+  speech_to_text: b43a7d99aef037bd758ed8e45d79bbac035d2dfe
+  Try: 5ef669ae832617b3cee58cb2c6f99fb767a4ff96
 
 PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
 

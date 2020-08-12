@@ -8,7 +8,10 @@ import 'package:esp32_project_flutter_app/ult.dart';
 import 'dart:async';
 import 'package:audioplayers/audio_cache.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'dart:core';
 
 //import 'package:flutter_audio_player/flutter_audio_player.dart';
 typedef void OnError(Exception exception);
@@ -43,17 +46,27 @@ class _UltraScreenState extends State<UltraScreen>
   AudioPlayer advancedPlayer;
   AudioCache audioCache;
   int _count = 0;
+  stt.SpeechToText _speech;
+  bool _isListening = false;
+  String _text = "try";
+  double _confidence = 1.0;
+  bool _mute = false;
+  double _oldreading = 0;
 
   @override
   void initState() {
     distWarnText = "Distance remind soon...";
     _distAudioName = 'audios/4m.m4a';
+    _speech = stt.SpeechToText();
     initPlayer();
     _timer = Timer.periodic(Duration(seconds: 10), (timer) {
       setState(() {
         print(_distAudioName);
         print(_count.toString());
-        _speak(_distAudioName);
+        if (!_mute) {
+          print(_mute.toString());
+          _speak(_distAudioName);
+        }
         //audioCache.play(_distAudioName);
       });
     });
@@ -158,6 +171,10 @@ class _UltraScreenState extends State<UltraScreen>
                           var _dist = ULT.fromJson(
                               snapshot.data.snapshot.value['Distance']);
                           print("Distance: ${_dist.data}");
+                          if ((_dist.data - _oldreading).abs() >= 0.5) {
+                            _oldreading = _dist.data;
+                            _mute = false;
+                          }
                           _setAudioName(_dist);
                           //print(_distAudioName);
                           //_buildAudioPlay();
@@ -220,7 +237,40 @@ class _UltraScreenState extends State<UltraScreen>
                 ),
               ),
             ),
-          )
+          ),
+          Row(
+            children: [
+              Align(
+                alignment: Alignment.bottomLeft,
+                child: Container(
+                  padding: const EdgeInsets.only(top: 40, left: 5, bottom: 5),
+                  child: FloatingActionButton(
+                    onPressed: () {},
+                    tooltip: 'Check',
+                    child: Icon(MaterialCommunityIcons.check),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Align(
+                  alignment: Alignment.bottomRight,
+                  child: Container(
+                    padding:
+                        const EdgeInsets.only(top: 40, right: 5, bottom: 5),
+                    child: FloatingActionButton(
+                      onPressed: () {
+                        setState(() {
+                          _mute = !_mute;
+                        });
+                      },
+                      tooltip: 'Mute',
+                      child: Icon(MaterialCommunityIcons.volume_mute),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -231,7 +281,6 @@ class _UltraScreenState extends State<UltraScreen>
       _distAudioName = "4m range";
       //_distAudioName = '4mr.mp3';
     } else if (_ult.data >= 2.0 && _ult.data <= 3.0) {
-      _count++;
       _distAudioName = "3m range";
       //_distAudioName = '3mr.mp3';
     } else if (_ult.data >= 1.0 && _ult.data < 2.0) {
@@ -246,6 +295,33 @@ class _UltraScreenState extends State<UltraScreen>
 
   Future _speak(String wordtosay) async {
     await flutterTts.speak(wordtosay);
+  }
+
+  void _listen() async {
+    if (!_isListening) {
+      bool available = await _speech.initialize(
+        onStatus: (val) => print('onStatus: $val'),
+        onError: (val) => print('onError: $val'),
+      );
+      if (available) {
+        setState(() {
+          _isListening = true;
+        });
+        _speech.listen(
+          onResult: (val) => setState(() {
+            _text = val.recognizedWords;
+            if (val.hasConfidenceRating && val.confidence > 0) {
+              _confidence = val.confidence;
+            }
+          }),
+        );
+      }
+    } else {
+      setState(() {
+        _isListening = false;
+      });
+      _speech.stop();
+    }
   }
 
 //  Future<dynamic> _buildAudioPlay() async {
