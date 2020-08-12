@@ -42,6 +42,7 @@ class _UltraScreenState extends State<UltraScreen>
   Duration _position = new Duration();
   AudioPlayer advancedPlayer;
   AudioCache audioCache;
+  int _count = 0;
 
   @override
   void initState() {
@@ -51,6 +52,7 @@ class _UltraScreenState extends State<UltraScreen>
     _timer = Timer.periodic(Duration(seconds: 10), (timer) {
       setState(() {
         print(_distAudioName);
+        print(_count.toString());
         _speak(_distAudioName);
         //audioCache.play(_distAudioName);
       });
@@ -229,6 +231,7 @@ class _UltraScreenState extends State<UltraScreen>
       _distAudioName = "4m range";
       //_distAudioName = '4mr.mp3';
     } else if (_ult.data >= 2.0 && _ult.data <= 3.0) {
+      _count++;
       _distAudioName = "3m range";
       //_distAudioName = '3mr.mp3';
     } else if (_ult.data >= 1.0 && _ult.data < 2.0) {
