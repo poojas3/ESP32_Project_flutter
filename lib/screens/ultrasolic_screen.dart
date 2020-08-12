@@ -63,6 +63,9 @@ class _UltraScreenState extends State<UltraScreen>
       setState(() {
         print(_distAudioName);
         print(_count.toString());
+        //_listen();
+        //print('first: $_text');
+        //print(_text);
         if (!_mute) {
           print(_mute.toString());
           _speak(_distAudioName);
@@ -171,6 +174,7 @@ class _UltraScreenState extends State<UltraScreen>
                           var _dist = ULT.fromJson(
                               snapshot.data.snapshot.value['Distance']);
                           print("Distance: ${_dist.data}");
+
                           if ((_dist.data - _oldreading).abs() >= 0.5) {
                             _oldreading = _dist.data;
                             _mute = false;
@@ -178,6 +182,8 @@ class _UltraScreenState extends State<UltraScreen>
                           _setAudioName(_dist);
                           //print(_distAudioName);
                           //_buildAudioPlay();
+                          //_listen();
+                          //print(_text);
                           return _distanceLayout(_dist);
                         } else {
                           return Center(
