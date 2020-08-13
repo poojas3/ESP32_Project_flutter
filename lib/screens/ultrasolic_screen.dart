@@ -271,6 +271,8 @@ class _UltraScreenState extends State<UltraScreen>
                       },
                       tooltip: 'Mute',
                       child: Icon(MaterialCommunityIcons.volume_mute),
+                      backgroundColor:
+                          _mute ? Colors.amber : Colors.lightBlueAccent,
                     ),
                   ),
                 ),
