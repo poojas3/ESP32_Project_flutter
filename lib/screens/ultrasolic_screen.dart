@@ -1,3 +1,5 @@
+import 'package:esp32_project_flutter_app/screens/ml_home.dart';
+import 'package:esp32_project_flutter_app/screens/ml_label.dart';
 import 'package:flutter/material.dart';
 import 'package:esp32_project_flutter_app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -12,6 +14,7 @@ import 'package:flutter_icons/flutter_icons.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'dart:core';
+import 'ml_home.dart';
 
 //import 'package:flutter_audio_player/flutter_audio_player.dart';
 typedef void OnError(Exception exception);
@@ -52,6 +55,7 @@ class _UltraScreenState extends State<UltraScreen>
   double _confidence = 1.0;
   bool _mute = false;
   double _oldreading = 0;
+  bool _check = false;
 
   @override
   void initState() {
@@ -251,9 +255,16 @@ class _UltraScreenState extends State<UltraScreen>
                 child: Container(
                   padding: const EdgeInsets.only(top: 40, left: 5, bottom: 5),
                   child: FloatingActionButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.pushNamed(context, MLLabel.id);
+                      /*setState(() {
+                        _check = !_check;
+                      });*/
+                    },
                     tooltip: 'Check',
                     child: Icon(MaterialCommunityIcons.check),
+                    backgroundColor:
+                        _check ? Colors.amber : Colors.lightBlueAccent,
                   ),
                 ),
               ),
@@ -271,6 +282,8 @@ class _UltraScreenState extends State<UltraScreen>
                       },
                       tooltip: 'Mute',
                       child: Icon(MaterialCommunityIcons.volume_mute),
+                      backgroundColor:
+                          _mute ? Colors.amber : Colors.lightBlueAccent,
                     ),
                   ),
                 ),
@@ -284,16 +297,16 @@ class _UltraScreenState extends State<UltraScreen>
 
   _setAudioName(ULT _ult) async {
     if (_ult.data > 3.0 && _ult.data < 4.0) {
-      _distAudioName = "4m range";
+      _distAudioName = "4m range, tap bottom right button to mute";
       //_distAudioName = '4mr.mp3';
     } else if (_ult.data >= 2.0 && _ult.data <= 3.0) {
-      _distAudioName = "3m range";
+      _distAudioName = "3m range, tap bottom right button to mute";
       //_distAudioName = '3mr.mp3';
     } else if (_ult.data >= 1.0 && _ult.data < 2.0) {
-      _distAudioName = "2m range";
+      _distAudioName = "2m range, tap bottom right button to mute";
       //_distAudioName = '2mr.mp3';
     } else if (_ult.data > 0.0 && _ult.data < 1.0) {
-      _distAudioName = "1m range";
+      _distAudioName = "1m range, tap bottom right button to mute";
       //_distAudioName = '1mr.mp3';
     }
     //await audioCache.play(_distAudioName);

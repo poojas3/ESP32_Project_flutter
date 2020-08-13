@@ -1,3 +1,6 @@
+import 'package:esp32_project_flutter_app/screens/ml_detail.dart';
+import 'package:esp32_project_flutter_app/screens/ml_home.dart';
+import 'package:esp32_project_flutter_app/screens/ml_label.dart';
 import 'package:flutter/material.dart';
 import 'package:esp32_project_flutter_app/screens/welcome_screen.dart';
 import 'package:esp32_project_flutter_app/screens/login_screen.dart';
@@ -17,6 +20,9 @@ class FlashChat extends StatelessWidget {
         RegistrationScreen.id: (context) =>
             RegistrationScreen(), //'registration'
         UltraScreen.id: (context) => UltraScreen(), //
+        MLHome.id: (context) => MLHome(),
+        MLLabel.id: (context) => MLLabel(),
+        //MLDetail.id: (context) => MLDetail(),
       },
     );
   }
