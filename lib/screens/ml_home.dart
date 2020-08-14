@@ -28,8 +28,6 @@ class _MLHomeState extends State<MLHome> {
   @override
   Widget build(BuildContext context) {
     final columns = List<Widget>();
-    columns.add(buildRowTitle(context, 'Select Scanner Type'));
-    columns.add(buildSelectScannerRowWidget(context));
     columns.add(buildRowTitle(context, 'Pick Image'));
     columns.add(buildSelectImageRowWidget(context));
 
@@ -155,6 +153,9 @@ class _MLHomeState extends State<MLHome> {
 
   void onPickImageSelected(String source) async {
     var imageSource;
+
+    onScannerSelected("Label Scanner");
+
     if (source == CAMERA_SOURCE) {
       imageSource = ImageSource.camera;
     } else {
@@ -168,7 +169,8 @@ class _MLHomeState extends State<MLHome> {
       if (file == null) {
         throw Exception('File is not available');
       }
-
+      print("file:${file}");
+      print("selectedscanner: ${_selectedScanner}");
       Navigator.push(
         context,
         new MaterialPageRoute(

@@ -46,34 +46,14 @@ class _MLDetailState extends State<MLDetail> {
   void analyzeLabels() async {
     try {
       var currentLabels;
-      if (widget._scannerType == TEXT_SCANNER) {
-        currentLabels = await textDetector.detectFromPath(widget._file.path);
-        if (this.mounted) {
-          setState(() {
-            _currentTextLabels = currentLabels;
-          });
-        }
-      } else if (widget._scannerType == BARCODE_SCANNER) {
-        currentLabels = await barcodeDetector.detectFromPath(widget._file.path);
-        if (this.mounted) {
-          setState(() {
-            _currentBarcodeLabels = currentLabels;
-          });
-        }
-      } else if (widget._scannerType == LABEL_SCANNER) {
+      {
         currentLabels = await labelDetector.detectFromPath(widget._file.path);
         if (this.mounted) {
           setState(() {
             _currentLabelLabels = currentLabels;
           });
         }
-      } else if (widget._scannerType == FACE_SCANNER) {
-        currentLabels = await faceDetector.detectFromPath(widget._file.path);
-        if (this.mounted) {
-          setState(() {
-            _currentFaceLabels = currentLabels;
-          });
-        }
+        print("currentlabels:${currentLabels}");
       }
     } catch (e) {
       print("MyEx: " + e.toString());
@@ -97,13 +77,7 @@ class _MLDetailState extends State<MLDetail> {
         body: Column(
           children: <Widget>[
             buildImage(context),
-            widget._scannerType == TEXT_SCANNER
-                ? buildTextList(_currentTextLabels)
-                : widget._scannerType == BARCODE_SCANNER
-                    ? buildBarcodeList<VisionBarcode>(_currentBarcodeLabels)
-                    : widget._scannerType == FACE_SCANNER
-                        ? buildBarcodeList<VisionFace>(_currentFaceLabels)
-                        : buildBarcodeList<VisionLabel>(_currentLabelLabels),
+            buildBarcodeList<VisionLabel>(_currentLabelLabels),
             Text(
               strspeech != null ? strspeech : "no data yet",
             ),
@@ -126,19 +100,8 @@ class _MLDetailState extends State<MLDetail> {
                         (BuildContext context, AsyncSnapshot<Size> snapshot) {
                       if (snapshot.hasData) {
                         return Container(
-                            foregroundDecoration: (widget._scannerType ==
-                                    TEXT_SCANNER)
-                                ? TextDetectDecoration(
-                                    _currentTextLabels, snapshot.data)
-                                : (widget._scannerType == FACE_SCANNER)
-                                    ? FaceDetectDecoration(
-                                        _currentFaceLabels, snapshot.data)
-                                    : (widget._scannerType == BARCODE_SCANNER)
-                                        ? BarcodeDetectDecoration(
-                                            _currentBarcodeLabels,
-                                            snapshot.data)
-                                        : LabelDetectDecoration(
-                                            _currentLabelLabels, snapshot.data),
+                            foregroundDecoration: LabelDetectDecoration(
+                                _currentLabelLabels, snapshot.data),
                             child:
                                 Image.file(widget._file, fit: BoxFit.fitWidth));
                       } else {
@@ -170,25 +133,13 @@ class _MLDetailState extends State<MLDetail> {
               var text;
 
               final barcode = barcodes[i];
-              switch (widget._scannerType) {
-                case BARCODE_SCANNER:
-                  VisionBarcode res = barcode as VisionBarcode;
-                  text = "Raw Value: ${res.rawValue}";
-                  break;
-                case FACE_SCANNER:
-                  VisionFace res = barcode as VisionFace;
-                  text =
-                      "Raw Value: ${res.smilingProbability},${res.trackingID}";
-                  break;
-                case LABEL_SCANNER:
-                  VisionLabel res = barcode as VisionLabel;
-                  text = "Raw Value: ${res.label}";
-                  strspeech == null
-                      ? strspeech = "${res.label}"
-                      : strspeech += "/n${res.label}";
-                  _speak(strspeech);
-                  break;
-              }
+
+              VisionLabel res = barcode as VisionLabel;
+              text = "Raw Value: ${res.label}";
+              strspeech == null
+                  ? strspeech = "${res.label}"
+                  : strspeech += "/n${res.label}";
+              _speak(strspeech);
 
               return _buildTextRow(text);
             }),
@@ -245,130 +196,6 @@ class _MLDetailState extends State<MLDetail> {
   https://github.com/azihsoyn/flutter_mlkit/blob/master/example/lib/main.dart
 */
 
-class BarcodeDetectDecoration extends Decoration {
-  final Size _originalImageSize;
-  final List<VisionBarcode> _barcodes;
-
-  BarcodeDetectDecoration(List<VisionBarcode> barcodes, Size originalImageSize)
-      : _barcodes = barcodes,
-        _originalImageSize = originalImageSize;
-
-  @override
-  BoxPainter createBoxPainter([VoidCallback onChanged]) {
-    return _BarcodeDetectPainter(_barcodes, _originalImageSize);
-  }
-}
-
-class _BarcodeDetectPainter extends BoxPainter {
-  final List<VisionBarcode> _barcodes;
-  final Size _originalImageSize;
-  _BarcodeDetectPainter(barcodes, originalImageSize)
-      : _barcodes = barcodes,
-        _originalImageSize = originalImageSize;
-
-  @override
-  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
-    final paint = Paint()
-      ..strokeWidth = 2.0
-      ..color = Colors.red
-      ..style = PaintingStyle.stroke;
-
-    final _heightRatio = _originalImageSize.height / configuration.size.height;
-    final _widthRatio = _originalImageSize.width / configuration.size.width;
-    for (var barcode in _barcodes) {
-      final _rect = Rect.fromLTRB(
-          offset.dx + barcode.rect.left / _widthRatio,
-          offset.dy + barcode.rect.top / _heightRatio,
-          offset.dx + barcode.rect.right / _widthRatio,
-          offset.dy + barcode.rect.bottom / _heightRatio);
-      canvas.drawRect(_rect, paint);
-    }
-    canvas.restore();
-  }
-}
-
-class TextDetectDecoration extends Decoration {
-  final Size _originalImageSize;
-  final List<VisionText> _texts;
-  TextDetectDecoration(List<VisionText> texts, Size originalImageSize)
-      : _texts = texts,
-        _originalImageSize = originalImageSize;
-
-  @override
-  BoxPainter createBoxPainter([VoidCallback onChanged]) {
-    return _TextDetectPainter(_texts, _originalImageSize);
-  }
-}
-
-class _TextDetectPainter extends BoxPainter {
-  final List<VisionText> _texts;
-  final Size _originalImageSize;
-  _TextDetectPainter(texts, originalImageSize)
-      : _texts = texts,
-        _originalImageSize = originalImageSize;
-
-  @override
-  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
-    final paint = Paint()
-      ..strokeWidth = 2.0
-      ..color = Colors.red
-      ..style = PaintingStyle.stroke;
-
-    final _heightRatio = _originalImageSize.height / configuration.size.height;
-    final _widthRatio = _originalImageSize.width / configuration.size.width;
-    for (var text in _texts) {
-      final _rect = Rect.fromLTRB(
-          offset.dx + text.rect.left / _widthRatio,
-          offset.dy + text.rect.top / _heightRatio,
-          offset.dx + text.rect.right / _widthRatio,
-          offset.dy + text.rect.bottom / _heightRatio);
-      canvas.drawRect(_rect, paint);
-    }
-    canvas.restore();
-  }
-}
-
-class FaceDetectDecoration extends Decoration {
-  final Size _originalImageSize;
-  final List<VisionFace> _faces;
-  FaceDetectDecoration(List<VisionFace> faces, Size originalImageSize)
-      : _faces = faces,
-        _originalImageSize = originalImageSize;
-
-  @override
-  BoxPainter createBoxPainter([VoidCallback onChanged]) {
-    return _FaceDetectPainter(_faces, _originalImageSize);
-  }
-}
-
-class _FaceDetectPainter extends BoxPainter {
-  final List<VisionFace> _faces;
-  final Size _originalImageSize;
-  _FaceDetectPainter(faces, originalImageSize)
-      : _faces = faces,
-        _originalImageSize = originalImageSize;
-
-  @override
-  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
-    final paint = Paint()
-      ..strokeWidth = 2.0
-      ..color = Colors.red
-      ..style = PaintingStyle.stroke;
-
-    final _heightRatio = _originalImageSize.height / configuration.size.height;
-    final _widthRatio = _originalImageSize.width / configuration.size.width;
-    for (var face in _faces) {
-      final _rect = Rect.fromLTRB(
-          offset.dx + face.rect.left / _widthRatio,
-          offset.dy + face.rect.top / _heightRatio,
-          offset.dx + face.rect.right / _widthRatio,
-          offset.dy + face.rect.bottom / _heightRatio);
-      canvas.drawRect(_rect, paint);
-    }
-    canvas.restore();
-  }
-}
-
 class LabelDetectDecoration extends Decoration {
   final Size _originalImageSize;
   final List<VisionLabel> _labels;
@@ -398,6 +225,7 @@ class _LabelDetectPainter extends BoxPainter {
 
     final _heightRatio = _originalImageSize.height / configuration.size.height;
     final _widthRatio = _originalImageSize.width / configuration.size.width;
+    print("labels:${_labels}");
     /*for (var label in _labels) {
       final _rect = Rect.fromLTRB(
           offset.dx + label.rect.left / _widthRatio,
