@@ -9,7 +9,7 @@ const String LABEL_SCANNER = 'LABEL_SCANNER';
 const String FACE_SCANNER = 'FACE_SCANNER';
 
 class MLHome extends StatefulWidget {
-  static const String id = 'MLHome_screen';
+  static const String id = 'ml_home';
   MLHome({Key key}) : super(key: key);
 
   @override

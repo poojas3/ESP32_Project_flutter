@@ -6,7 +6,7 @@ import 'package:mlkit/mlkit.dart';
 import 'dart:async';
 
 class MLLabel extends StatefulWidget {
-  static const String id = 'mllabel_screen';
+  static const String id = 'ml_label';
   @override
   _MLLabelState createState() => new _MLLabelState();
 }
@@ -25,40 +25,43 @@ class _MLLabelState extends State<MLLabel> {
 
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
-      home: new Scaffold(
-        appBar: new AppBar(
-          title: new Text('Image Labeling Firebase'),
-        ),
-        body: _buildBody(_file),
-        floatingActionButton: new FloatingActionButton(
-          onPressed: () async {
-            try {
-              var file =
-                  await ImagePicker.pickImage(source: ImageSource.gallery);
-              setState(() {
-                _file = file;
-              });
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Image Labeling Firebase'),
+      ),
+      body: Column(
+        children: [
+          _buildBody(_file),
+          FloatingActionButton(
+            heroTag: 'ImageLabeling',
+            onPressed: () async {
+              try {
+                var file =
+                    await ImagePicker.pickImage(source: ImageSource.camera);
+                setState(() {
+                  _file = file;
+                });
 
-              var currentLabels =
-                  await detector.detectFromBinary(_file?.readAsBytesSync());
-              setState(() {
-                _currentLabels = currentLabels;
-              });
-            } catch (e) {
-              print(e.toString());
-            }
-          },
-          child: new Icon(Icons.select_all),
-        ),
+                var currentLabels =
+                    await detector.detectFromBinary(_file?.readAsBytesSync());
+                setState(() {
+                  _currentLabels = currentLabels;
+                });
+              } catch (e) {
+                print(e.toString());
+              }
+            },
+            child: Icon(Icons.select_all),
+          ),
+        ],
       ),
     );
   }
 
   //Build body
   Widget _buildBody(File _file) {
-    return new Container(
-      child: new Column(
+    return Container(
+      child: Column(
         children: <Widget>[
           displaySelectedFile(_file),
           _buildList(_currentLabels)
@@ -69,11 +72,11 @@ class _MLLabelState extends State<MLLabel> {
 
   Widget _buildList(List<VisionLabel> labels) {
     if (labels == null || labels.length == 0) {
-      return new Text('Empty', textAlign: TextAlign.center);
+      return Text('Empty', textAlign: TextAlign.center);
     }
-    return new Expanded(
-      child: new Container(
-        child: new ListView.builder(
+    return Expanded(
+      child: Container(
+        child: ListView.builder(
             padding: const EdgeInsets.all(1.0),
             itemCount: labels.length,
             itemBuilder: (context, i) {

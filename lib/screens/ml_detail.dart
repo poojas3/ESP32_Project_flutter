@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:mlkit/mlkit.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class MLDetail extends StatefulWidget {
   static const String id = 'MLDetail_screen';
@@ -31,6 +32,9 @@ class _MLDetailState extends State<MLDetail> {
 
   Stream sub;
   StreamSubscription<dynamic> subscription;
+  Timer _timer;
+  final FlutterTts flutterTts = FlutterTts();
+  String strspeech;
 
   @override
   void initState() {
@@ -99,7 +103,10 @@ class _MLDetailState extends State<MLDetail> {
                     ? buildBarcodeList<VisionBarcode>(_currentBarcodeLabels)
                     : widget._scannerType == FACE_SCANNER
                         ? buildBarcodeList<VisionFace>(_currentFaceLabels)
-                        : buildBarcodeList<VisionLabel>(_currentLabelLabels)
+                        : buildBarcodeList<VisionLabel>(_currentLabelLabels),
+            Text(
+              strspeech != null ? strspeech : "no data yet",
+            ),
           ],
         ));
   }
@@ -176,6 +183,10 @@ class _MLDetailState extends State<MLDetail> {
                 case LABEL_SCANNER:
                   VisionLabel res = barcode as VisionLabel;
                   text = "Raw Value: ${res.label}";
+                  strspeech == null
+                      ? strspeech = "${res.label}"
+                      : strspeech += "/n${res.label}";
+                  _speak(strspeech);
                   break;
               }
 
@@ -222,6 +233,10 @@ class _MLDetailState extends State<MLDetail> {
         (ImageInfo info, bool _) => completer.complete(
             Size(info.image.width.toDouble(), info.image.height.toDouble())));*/
     return completer.future;
+  }
+
+  Future _speak(String wordtosay) async {
+    await flutterTts.speak(wordtosay);
   }
 }
 
