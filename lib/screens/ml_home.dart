@@ -2,6 +2,7 @@ import 'ml_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:flutter_tts/flutter_tts.dart';
 
 const String TEXT_SCANNER = 'TEXT_SCANNER';
 const String BARCODE_SCANNER = 'BARCODE_SCANNER';
@@ -24,13 +25,15 @@ class _MLHomeState extends State<MLHome> {
 
   File _file;
   String _selectedScanner = TEXT_SCANNER;
+  final FlutterTts flutterTts = FlutterTts();
 
   @override
   Widget build(BuildContext context) {
     final columns = List<Widget>();
     columns.add(buildRowTitle(context, 'Pick Image'));
     columns.add(buildSelectImageRowWidget(context));
-
+    _speak(
+        "Tap upper left to take a photo with Camera; Tap upper right to get photo from Gallery");
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
@@ -57,14 +60,16 @@ class _MLHomeState extends State<MLHome> {
 
   Widget buildSelectImageRowWidget(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: <Widget>[
         Expanded(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.0),
-          child: RaisedButton(
+          child: MaterialButton(
               color: Colors.blue,
               textColor: Colors.white,
               splashColor: Colors.blueGrey,
+              height: 100,
               onPressed: () {
                 onPickImageSelected(CAMERA_SOURCE);
               },
@@ -73,10 +78,11 @@ class _MLHomeState extends State<MLHome> {
         Expanded(
             child: Padding(
           padding: EdgeInsets.symmetric(horizontal: 8.0),
-          child: RaisedButton(
+          child: MaterialButton(
               color: Colors.blue,
               textColor: Colors.white,
               splashColor: Colors.blueGrey,
+              height: 100,
               onPressed: () {
                 onPickImageSelected(GALLERY_SOURCE);
               },
@@ -181,5 +187,9 @@ class _MLHomeState extends State<MLHome> {
         content: Text(e.toString()),
       ));
     }
+  }
+
+  Future _speak(String wordtosay) async {
+    await flutterTts.speak(wordtosay);
   }
 }
