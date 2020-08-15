@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:esp32_project_flutter_app/constants.dart';
 import 'package:firebase_database/firebase_database.dart';
+import 'dart:io';
+import 'package:mlkit/mlkit.dart';
+import 'dart:async';
 
 DatabaseReference _dataRef =
-FirebaseDatabase.instance.reference().child('ESP32_Device');
+    FirebaseDatabase.instance.reference().child('ESP32_CAM');
 
 class Vision extends StatefulWidget {
+  static const String id = 'vision';
+  //final File _file ;
+
   @override
   _VisionState createState() => _VisionState();
 }
@@ -18,12 +24,12 @@ class _VisionState extends State<Vision> {
   bool bcapture = false;
   bool brecognise = false;
   bool bdeleteall = false;
+  List<VisionLabel> _currentLabelLabels = <VisionLabel>[];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
   }
 
   @override
@@ -37,15 +43,15 @@ class _VisionState extends State<Vision> {
       body: Column(
         children: <Widget>[
           StreamBuilder(
-    stream: _dataRef.onValue,
-    builder: (context, snapshot) {
-    if (snapshot.hasData &&
-    !snapshot.hasError &&
-    snapshot.data.snapshot.value != null) {
-      print(
-          "snapshot data:${snapshot.data.snapshot.value.toString()}");
-    }}
-    ),
+              stream: _dataRef.onValue,
+              builder: (context, snapshot) {
+                if (snapshot.hasData &&
+                    !snapshot.hasError &&
+                    snapshot.data.snapshot.value != null) {
+                  print(
+                      "snapshot data:${snapshot.data.snapshot.value.toString()}");
+                }
+              }),
           buildImage(context),
           SizedBox(
             height: 10.0,
@@ -129,7 +135,14 @@ class _VisionState extends State<Vision> {
             'Captured Faces',
             style: kCapFaceTextStyle,
           ),
-          ListView.builder(),
+          ListView.builder(
+              padding: const EdgeInsets.all(1.0),
+              //itemCount: barcodes.length,
+              itemBuilder: (context, i) {
+                var text;
+
+                //final barcode = barcodes[i];
+              }),
           SizedBox(
             height: 24.0,
           ),
@@ -148,18 +161,18 @@ class _VisionState extends State<Vision> {
       ),
     );
   }
-  
-  Widget addFaceToScreen(personname){
-    return ListView.builder(itemBuilder: null)
+
+  Widget addFaceToScreen(personname) {
+    return ListView.builder(itemBuilder: null);
   }
 
   Widget buildImage(BuildContext context) {
     return Expanded(
       flex: 2,
       child: Container(
-          decoration: BoxDecoration(color: Colors.black),
-          child: Center(
-            child: widget._file == null
+        decoration: BoxDecoration(color: Colors.black),
+        child: Center(
+            /*child: widget._file == null
                 ? Text('No Image')
                 : FutureBuilder<Size>(
                     future: _getImageSize(
@@ -176,12 +189,63 @@ class _VisionState extends State<Vision> {
                         return CircularProgressIndicator();
                       }
                     },
-                  ),
-          )),
+                  ),*/
+            ),
+      ),
     );
   }
 
   void onCMDSEND(String cmd) {
     //send the command to firebase database
+  }
+
+  Future<Size> _getImageSize(Image image) {
+    Completer<Size> completer = Completer<Size>();
+    /*image.image.resolve(ImageConfiguration()).addListener(
+        (ImageInfo info, bool _) => completer.complete(
+            Size(info.image.width.toDouble(), info.image.height.toDouble())));*/
+    return completer.future;
+  }
+}
+
+class LabelDetectDecoration extends Decoration {
+  final Size _originalImageSize;
+  final List<VisionLabel> _labels;
+  LabelDetectDecoration(List<VisionLabel> labels, Size originalImageSize)
+      : _labels = labels,
+        _originalImageSize = originalImageSize;
+
+  @override
+  BoxPainter createBoxPainter([VoidCallback onChanged]) {
+    return _LabelDetectPainter(_labels, _originalImageSize);
+  }
+}
+
+class _LabelDetectPainter extends BoxPainter {
+  final List<VisionLabel> _labels;
+  final Size _originalImageSize;
+  _LabelDetectPainter(labels, originalImageSize)
+      : _labels = labels,
+        _originalImageSize = originalImageSize;
+
+  @override
+  void paint(Canvas canvas, Offset offset, ImageConfiguration configuration) {
+    final paint = Paint()
+      ..strokeWidth = 2.0
+      ..color = Colors.red
+      ..style = PaintingStyle.stroke;
+
+    final _heightRatio = _originalImageSize.height / configuration.size.height;
+    final _widthRatio = _originalImageSize.width / configuration.size.width;
+    print("labels:${_labels}");
+    /*for (var label in _labels) {
+      final _rect = Rect.fromLTRB(
+          offset.dx + label.rect.left / _widthRatio,
+          offset.dy + label.rect.top / _heightRatio,
+          offset.dx + label.rect.right / _widthRatio,
+          offset.dy + label.rect.bottom / _heightRatio);
+      canvas.drawRect(_rect, paint);
+    }
+    canvas.restore();*/
   }
 }

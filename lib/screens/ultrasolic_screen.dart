@@ -60,7 +60,7 @@ class _UltraScreenState extends State<UltraScreen>
   @override
   void initState() {
     distWarnText = "Distance remind soon...";
-    _distAudioName = 'audios/4m.m4a';
+    //_distAudioName = 'audios/4m.m4a';
     _speech = stt.SpeechToText();
     initPlayer();
     _timer = Timer.periodic(Duration(seconds: 10), (timer) {
