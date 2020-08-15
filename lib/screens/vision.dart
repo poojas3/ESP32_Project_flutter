@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:esp32_project_flutter_app/constants.dart';
+import 'package:firebase_database/firebase_database.dart';
+
+DatabaseReference _dataRef =
+FirebaseDatabase.instance.reference().child('ESP32_Device');
 
 class Vision extends StatefulWidget {
   @override
@@ -11,16 +15,37 @@ class _VisionState extends State<Vision> {
   String personname;
   bool bstream = false;
   bool bdetect = false;
+  bool bcapture = false;
+  bool brecognise = false;
+  bool bdeleteall = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black54,
       appBar: AppBar(
         centerTitle: true,
         title: Text("Camera Vision"),
       ),
       body: Column(
         children: <Widget>[
+          StreamBuilder(
+    stream: _dataRef.onValue,
+    builder: (context, snapshot) {
+    if (snapshot.hasData &&
+    !snapshot.hasError &&
+    snapshot.data.snapshot.value != null) {
+      print(
+          "snapshot data:${snapshot.data.snapshot.value.toString()}");
+    }}
+    ),
           buildImage(context),
           SizedBox(
             height: 10.0,
@@ -36,6 +61,7 @@ class _VisionState extends State<Vision> {
             obscureText: true,
             textAlign: TextAlign.center,
             onChanged: (value) {
+              bcapture = false;
               personname = value;
             },
             decoration: kTextFieldDecoration.copyWith(
@@ -71,11 +97,60 @@ class _VisionState extends State<Vision> {
             ],
           ),
           Row(
-            children: [],
-          )
+            children: [
+              MaterialButton(
+                color: bcapture ? Colors.grey : Colors.blue,
+                textColor: Colors.white,
+                splashColor: Colors.blueGrey,
+                height: 100,
+                onPressed: () {
+                  bcapture = !bcapture;
+                  onCMDSEND("capture: $personname");
+                },
+                child: const Text('CAPTURE'),
+              ),
+              MaterialButton(
+                color: brecognise ? Colors.grey : Colors.blue,
+                textColor: Colors.white,
+                splashColor: Colors.blueGrey,
+                height: 100,
+                onPressed: () {
+                  brecognise = !brecognise;
+                  onCMDSEND("recognise");
+                },
+                child: const Text('RECOGNISE'),
+              ),
+            ],
+          ),
+          SizedBox(
+            height: 24.0,
+          ),
+          Text(
+            'Captured Faces',
+            style: kCapFaceTextStyle,
+          ),
+          ListView.builder(),
+          SizedBox(
+            height: 24.0,
+          ),
+          MaterialButton(
+            color: bdeleteall ? Colors.grey : Colors.blue,
+            textColor: Colors.white,
+            splashColor: Colors.blueGrey,
+            height: 100,
+            onPressed: () {
+              bdeleteall = !bdeleteall;
+              onCMDSEND("delete_all");
+            },
+            child: const Text('DELETE ALL'),
+          ),
         ],
       ),
     );
+  }
+  
+  Widget addFaceToScreen(personname){
+    return ListView.builder(itemBuilder: null)
   }
 
   Widget buildImage(BuildContext context) {
