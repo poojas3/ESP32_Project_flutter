@@ -15,7 +15,7 @@ class CircleProgress extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     int maximumValue =
-        isTemp ? 5 : 100; //Temp's max is 50,Humidity's max is 100
+        isTemp ? 450 : 100; //Temp's max is 50,Humidity's max is 100
 
     Paint outerCircle = Paint()
       ..strokeWidth = 14
