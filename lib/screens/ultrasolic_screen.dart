@@ -60,6 +60,8 @@ class _UltraScreenState extends State<UltraScreen>
   String personname;
   String oldname;
   int speaknametimes = 0;
+  String olddistance;
+  int speakdistimes = 0;
 
   @override
   void initState() {
@@ -71,19 +73,31 @@ class _UltraScreenState extends State<UltraScreen>
       setState(() {
         print("speak:$_distAudioName");
         print(_count.toString());
+        print("speaktimes: $speaknametimes \npersonname:$personname");
         //_listen();
         //print('first: $_text');
         //print(_text);
         if (!_mute) {
           print(_mute.toString());
-          _speak(_distAudioName);
-          if (personname != "") {
-            if (oldname != personname && speaknametimes < 5) {
-              _speak("Hello $personname");
+          if (_distAudioName != "") {
+            if (olddistance != _distAudioName) {
+              olddistance = _distAudioName;
+              speakdistimes = 0;
+            }
+            if (speakdistimes < 5) {
+              _speak(_distAudioName);
+              speakdistimes++;
+            }
+          }
+
+          if (personname != "" && personname != "None") {
+            if (oldname != personname) {
               oldname = personname;
-              speaknametimes++;
-            } else if (speaknametimes > 5) {
               speaknametimes = 0;
+            }
+            if (speaknametimes < 5) {
+              _speak("Hello $personname");
+              speaknametimes++;
             }
           }
         }
