@@ -15,6 +15,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'dart:core';
 import 'ml_home.dart';
+import 'package:esp32_project_flutter_app/getname.dart';
 
 //import 'package:flutter_audio_player/flutter_audio_player.dart';
 typedef void OnError(Exception exception);
@@ -56,16 +57,19 @@ class _UltraScreenState extends State<UltraScreen>
   bool _mute = false;
   double _oldreading = 0;
   bool _check = false;
+  String personname;
+  String oldname;
+  int speaknametimes = 0;
 
   @override
   void initState() {
     distWarnText = "Distance remind soon...";
-    _distAudioName = 'audios/4m.m4a';
+    //_distAudioName = 'audios/4m.m4a';
     _speech = stt.SpeechToText();
     initPlayer();
     _timer = Timer.periodic(Duration(seconds: 10), (timer) {
       setState(() {
-        print(_distAudioName);
+        print("speak:$_distAudioName");
         print(_count.toString());
         //_listen();
         //print('first: $_text');
@@ -73,6 +77,15 @@ class _UltraScreenState extends State<UltraScreen>
         if (!_mute) {
           print(_mute.toString());
           _speak(_distAudioName);
+          if (personname != "") {
+            if (oldname != personname && speaknametimes < 5) {
+              _speak("Hello $personname");
+              oldname = personname;
+              speaknametimes++;
+            } else if (speaknametimes > 5) {
+              speaknametimes = 0;
+            }
+          }
         }
         //audioCache.play(_distAudioName);
       });
@@ -178,7 +191,9 @@ class _UltraScreenState extends State<UltraScreen>
                           var _dist = ULT.fromJson(
                               snapshot.data.snapshot.value['Distance']);
                           print("Distance: ${_dist.data}");
-
+                          var person = CAM.fromJson(
+                              snapshot.data.snapshot.value['MatchPerson']);
+                          personname = person.data;
                           if ((_dist.data - _oldreading).abs() >= 0.5) {
                             _oldreading = _dist.data;
                             _mute = false;
@@ -196,6 +211,10 @@ class _UltraScreenState extends State<UltraScreen>
                         }
                       },
                     ),
+                  ),
+                  Text(
+                    personname == null ? "None" : personname,
+                    style: kPersonnameDecoration,
                   ),
                 ],
               )
@@ -234,12 +253,12 @@ class _UltraScreenState extends State<UltraScreen>
                         Text(
                           '${_ult.data.toStringAsFixed(3)}',
                           style: TextStyle(
-                              fontSize: 50, fontWeight: FontWeight.bold),
+                              fontSize: 40, fontWeight: FontWeight.bold),
                         ),
                         Text(
-                          'm',
+                          'cm',
                           style: TextStyle(
-                              fontSize: 50, fontWeight: FontWeight.bold),
+                              fontSize: 40, fontWeight: FontWeight.bold),
                         )
                       ],
                     ),
@@ -298,18 +317,20 @@ class _UltraScreenState extends State<UltraScreen>
   }
 
   _setAudioName(ULT _ult) async {
-    if (_ult.data > 3.0 && _ult.data < 4.0) {
+    if (_ult.data > 300.0 && _ult.data < 400.0) {
       _distAudioName = "4m range, tap bottom right button to mute";
       //_distAudioName = '4mr.mp3';
-    } else if (_ult.data >= 2.0 && _ult.data <= 3.0) {
+    } else if (_ult.data >= 200.0 && _ult.data <= 300.0) {
       _distAudioName = "3m range, tap bottom right button to mute";
       //_distAudioName = '3mr.mp3';
-    } else if (_ult.data >= 1.0 && _ult.data < 2.0) {
+    } else if (_ult.data >= 100.0 && _ult.data < 200.0) {
       _distAudioName = "2m range, tap bottom right button to mute";
       //_distAudioName = '2mr.mp3';
-    } else if (_ult.data > 0.0 && _ult.data < 1.0) {
+    } else if (_ult.data > 0.0 && _ult.data < 100.0) {
       _distAudioName = "1m range, tap bottom right button to mute";
       //_distAudioName = '1mr.mp3';
+    } else {
+      _distAudioName = "unknown, tap bottom right button to mute";
     }
     //await audioCache.play(_distAudioName);
   }
