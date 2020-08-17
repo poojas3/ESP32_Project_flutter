@@ -72,6 +72,8 @@ class _UltraScreenState extends State<UltraScreen>
     //_distAudioName = 'audios/4m.m4a';
     _speech = stt.SpeechToText();
     initPlayer();
+    _speak(
+        "tap bottom right button to enable distance detection, tap bottom left button to enable camera");
     _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       setState(() {
         print("speak:$_distAudioName");
@@ -208,14 +210,23 @@ class _UltraScreenState extends State<UltraScreen>
                           var _dist = ULT.fromJson(
                               snapshot.data.snapshot.value['Distance']);
                           print("Distance: ${_dist.data}");
-                          var person = CAM.fromJson(
-                              snapshot.data.snapshot.value['MatchPerson']);
-                          personname = person.data;
-                          if ((_dist.data - _oldreading).abs() >= 0.5) {
+                          if (snapshot.data.snapshot.value['MatchPerson'] !=
+                              null) {
+                            var person = CAM.fromJson(
+                                snapshot.data.snapshot.value['MatchPerson']);
+                            personname = person.data;
+                          }
+
+                          if ((_dist.data - _oldreading).abs() >= 10) {
                             _oldreading = _dist.data;
-                            _mute = false;
+                            //_mute = false;
                           }
                           _setAudioName(_dist);
+                          if (personname != "" &&
+                              personname != "None" &&
+                              speaknametimes >= 5) {
+                            _distRef.child('MatchPerson').remove();
+                          }
                           //print(_distAudioName);
                           //_buildAudioPlay();
                           //_listen();
@@ -302,7 +313,7 @@ class _UltraScreenState extends State<UltraScreen>
                     tooltip: 'Check',
                     child: Icon(MaterialCommunityIcons.camera),
                     backgroundColor:
-                        _check ? Colors.amber : Colors.lightBlueAccent,
+                        camen ? Colors.amber : Colors.lightBlueAccent,
                   ),
                 ),
               ),
@@ -385,7 +396,10 @@ class _UltraScreenState extends State<UltraScreen>
   }
 
   void onCameraenable() {
-    camen = !camen;
+    setState(() {
+      camen = !camen;
+    });
+
     _distRef.child("camen").set({
       'camen': camen,
     });
