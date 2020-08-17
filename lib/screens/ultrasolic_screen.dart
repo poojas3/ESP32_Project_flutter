@@ -53,9 +53,10 @@ class _UltraScreenState extends State<UltraScreen>
   bool _isListening = false;
   String _text = "try";
   double _confidence = 1.0;
-  bool _mute = false;
+  bool _mute = true;
   double _oldreading = 0;
   bool _check = false;
+  bool camen = false;
 
   @override
   void initState() {
@@ -63,7 +64,7 @@ class _UltraScreenState extends State<UltraScreen>
     //_distAudioName = 'audios/4m.m4a';
     _speech = stt.SpeechToText();
     initPlayer();
-    _timer = Timer.periodic(Duration(seconds: 10), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 5), (timer) {
       setState(() {
         print(_distAudioName);
         print(_count.toString());
@@ -257,13 +258,14 @@ class _UltraScreenState extends State<UltraScreen>
                   child: FloatingActionButton(
                     heroTag: 'Check',
                     onPressed: () {
+                      onCameraenable();
                       Navigator.pushNamed(context, MLHome.id);
                       /*setState(() {
                         _check = !_check;
                       });*/
                     },
                     tooltip: 'Check',
-                    child: Icon(MaterialCommunityIcons.check),
+                    child: Icon(MaterialCommunityIcons.camera),
                     backgroundColor:
                         _check ? Colors.amber : Colors.lightBlueAccent,
                   ),
@@ -283,7 +285,7 @@ class _UltraScreenState extends State<UltraScreen>
                         });
                       },
                       tooltip: 'Mute',
-                      child: Icon(MaterialCommunityIcons.volume_mute),
+                      child: Icon(MaterialCommunityIcons.ruler),
                       backgroundColor:
                           _mute ? Colors.amber : Colors.lightBlueAccent,
                     ),
@@ -343,6 +345,13 @@ class _UltraScreenState extends State<UltraScreen>
       });
       _speech.stop();
     }
+  }
+
+  void onCameraenable() {
+    camen = !camen;
+    _distRef.child("camen").set({
+      'camen': camen,
+    });
   }
 
 //  Future<dynamic> _buildAudioPlay() async {
