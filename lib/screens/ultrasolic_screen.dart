@@ -210,6 +210,8 @@ class _UltraScreenState extends State<UltraScreen>
                           var _dist = ULT.fromJson(
                               snapshot.data.snapshot.value['Distance']);
                           print("Distance: ${_dist.data}");
+                          print(
+                              "matper:${snapshot.data.snapshot.value['MatchPerson']}");
                           if (snapshot.data.snapshot.value['MatchPerson'] !=
                               null) {
                             var person = CAM.fromJson(
@@ -226,6 +228,7 @@ class _UltraScreenState extends State<UltraScreen>
                               personname != "None" &&
                               speaknametimes >= 5) {
                             _distRef.child('MatchPerson').remove();
+                            oldname = "";
                           }
                           //print(_distAudioName);
                           //_buildAudioPlay();
