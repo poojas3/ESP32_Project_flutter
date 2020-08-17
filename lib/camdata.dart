@@ -12,6 +12,13 @@ class CamData {
       }
     }
 
-    return CamData(data: parser(json['Data']));
+    String photoid = json.keys.toList()[0];
+    print("photoid: $photoid");
+    var firstphoto = json[photoid];
+    print("photodata: ${firstphoto}");
+    Map<dynamic, dynamic> json1 = firstphoto;
+
+    print("photodata1:${json1['data']}");
+    return CamData(data: parser(json1['data']));
   }
 }

@@ -4,9 +4,12 @@ import 'package:firebase_database/firebase_database.dart';
 import 'dart:io';
 import 'package:mlkit/mlkit.dart';
 import 'dart:async';
+import 'package:esp32_project_flutter_app/camdata.dart';
+import 'dart:typed_data';
+import 'dart:convert';
 
 DatabaseReference _dataRef =
-    FirebaseDatabase.instance.reference().child('ESP32_CAM');
+    FirebaseDatabase.instance.reference().child('esp32-cam');
 
 class Vision extends StatefulWidget {
   static const String id = 'vision';
@@ -25,6 +28,7 @@ class _VisionState extends State<Vision> {
   bool brecognise = false;
   bool bdeleteall = false;
   List<VisionLabel> _currentLabelLabels = <VisionLabel>[];
+  String _base64;
 
   @override
   void initState() {
@@ -40,130 +44,133 @@ class _VisionState extends State<Vision> {
         centerTitle: true,
         title: Text("Camera Vision"),
       ),
-      body: Column(
-        children: <Widget>[
-          StreamBuilder(
-              stream: _dataRef.onValue,
-              builder: (context, snapshot) {
-                if (snapshot.hasData &&
-                    !snapshot.hasError &&
-                    snapshot.data.snapshot.value != null) {
-                  print(
-                      "snapshot data:${snapshot.data.snapshot.value.toString()}");
-                }
-              }),
-          buildImage(context),
-          SizedBox(
-            height: 10.0,
-          ),
-          Text(
-            message,
-            style: kVisionMsgTextStyle,
-          ),
-          SizedBox(
-            height: 8.0,
-          ),
-          TextField(
-            obscureText: true,
-            textAlign: TextAlign.center,
-            onChanged: (value) {
-              bcapture = false;
-              personname = value;
-            },
-            decoration: kTextFieldDecoration.copyWith(
-                hintText: 'Enter the person' 's name'),
-          ),
-          SizedBox(
-            height: 24.0,
-          ),
-          Row(
-            children: [
-              MaterialButton(
-                color: bstream ? Colors.grey : Colors.blue,
-                textColor: Colors.white,
-                splashColor: Colors.blueGrey,
-                height: 100,
-                onPressed: () {
-                  bstream = !bstream;
-                  onCMDSEND("stream");
-                },
-                child: const Text('STREAM'),
-              ),
-              MaterialButton(
-                color: bdetect ? Colors.grey : Colors.blue,
-                textColor: Colors.white,
-                splashColor: Colors.blueGrey,
-                height: 100,
-                onPressed: () {
-                  bdetect = !bdetect;
-                  onCMDSEND("detect");
-                },
-                child: const Text('DETECT'),
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              MaterialButton(
-                color: bcapture ? Colors.grey : Colors.blue,
-                textColor: Colors.white,
-                splashColor: Colors.blueGrey,
-                height: 100,
-                onPressed: () {
-                  bcapture = !bcapture;
-                  onCMDSEND("capture: $personname");
-                },
-                child: const Text('CAPTURE'),
-              ),
-              MaterialButton(
-                color: brecognise ? Colors.grey : Colors.blue,
-                textColor: Colors.white,
-                splashColor: Colors.blueGrey,
-                height: 100,
-                onPressed: () {
-                  brecognise = !brecognise;
-                  onCMDSEND("recognise");
-                },
-                child: const Text('RECOGNISE'),
-              ),
-            ],
-          ),
-          SizedBox(
-            height: 24.0,
-          ),
-          Text(
-            'Captured Faces',
-            style: kCapFaceTextStyle,
-          ),
-          ListView.builder(
-              padding: const EdgeInsets.all(1.0),
-              //itemCount: barcodes.length,
-              itemBuilder: (context, i) {
-                var text;
-
-                //final barcode = barcodes[i];
-              }),
-          SizedBox(
-            height: 24.0,
-          ),
-          MaterialButton(
-            color: bdeleteall ? Colors.grey : Colors.blue,
-            textColor: Colors.white,
-            splashColor: Colors.blueGrey,
-            height: 100,
-            onPressed: () {
-              bdeleteall = !bdeleteall;
-              onCMDSEND("delete_all");
-            },
-            child: const Text('DELETE ALL'),
-          ),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: <Widget>[
+            StreamBuilder(
+                stream: _dataRef.onValue,
+                builder: (context, snapshot) {
+                  if (snapshot.hasData &&
+                      !snapshot.hasError &&
+                      snapshot.data.snapshot.value != null) {
+                    print(
+                        "snapshot data:${snapshot.data.snapshot.value['photo'].toString()}");
+                    var _photo =
+                        CamData.fromJson(snapshot.data.snapshot.value['photo']);
+                    _base64 = _photo.data;
+                    print("imagedata: $_base64");
+                    return buildImagebase64(context);
+                  } else {
+                    return Center(
+                      child: Text("No data yet"),
+                    );
+                  }
+                }),
+            Text(
+              message == null ? "No message" : message,
+              style: kVisionMsgTextStyle,
+            ),
+            TextField(
+              obscureText: true,
+              textAlign: TextAlign.center,
+              onChanged: (value) {
+                bcapture = false;
+                personname = value;
+              },
+              decoration: kTextFieldDecoration.copyWith(
+                  hintText: 'Enter the person' 's name'),
+            ),
+            Row(
+              children: [
+                MaterialButton(
+                  color: bstream ? Colors.grey : Colors.blue,
+                  textColor: Colors.white,
+                  splashColor: Colors.blueGrey,
+                  height: 20,
+                  onPressed: () {
+                    bstream = !bstream;
+                    onCMDSEND("stream");
+                  },
+                  child: const Text('STREAM'),
+                ),
+                MaterialButton(
+                  color: bdetect ? Colors.grey : Colors.blue,
+                  textColor: Colors.white,
+                  splashColor: Colors.blueGrey,
+                  height: 20,
+                  onPressed: () {
+                    bdetect = !bdetect;
+                    onCMDSEND("detect");
+                  },
+                  child: const Text('DETECT'),
+                ),
+              ],
+            ),
+            Row(
+              children: [
+                MaterialButton(
+                  color: bcapture ? Colors.grey : Colors.blue,
+                  textColor: Colors.white,
+                  splashColor: Colors.blueGrey,
+                  height: 20,
+                  onPressed: () {
+                    bcapture = !bcapture;
+                    onCMDSEND("capture: $personname");
+                  },
+                  child: const Text('CAPTURE'),
+                ),
+                MaterialButton(
+                  color: brecognise ? Colors.grey : Colors.blue,
+                  textColor: Colors.white,
+                  splashColor: Colors.blueGrey,
+                  height: 20,
+                  onPressed: () {
+                    brecognise = !brecognise;
+                    onCMDSEND("recognise");
+                  },
+                  child: const Text('RECOGNISE'),
+                ),
+              ],
+            ),
+            Text(
+              'Captured Faces',
+              style: kCapFaceTextStyle,
+            ),
+            Text(
+              'Should be ListView',
+              style: kCapFaceTextStyle,
+            ),
+            MaterialButton(
+              color: bdeleteall ? Colors.grey : Colors.blue,
+              textColor: Colors.white,
+              splashColor: Colors.blueGrey,
+              height: 20,
+              onPressed: () {
+                bdeleteall = !bdeleteall;
+                onCMDSEND("delete_all");
+              },
+              child: const Text('DELETE ALL'),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget addFaceToScreen(personname) {
     return ListView.builder(itemBuilder: null);
+  }
+
+  Widget buildImagebase64(BuildContext context) {
+    if (_base64 == null) return new Container();
+    Uint8List bytes = base64.decode(_base64);
+    return new Scaffold(
+      appBar: new AppBar(title: new Text('Example App')),
+      body: new ListTile(
+        leading: new Image.memory(bytes),
+        title: new Text("image"),
+      ),
+    );
   }
 
   Widget buildImage(BuildContext context) {

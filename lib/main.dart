@@ -5,6 +5,7 @@ import 'package:esp32_project_flutter_app/screens/welcome_screen.dart';
 import 'package:esp32_project_flutter_app/screens/login_screen.dart';
 import 'package:esp32_project_flutter_app/screens/registration_screen.dart';
 import 'package:esp32_project_flutter_app/screens/ultrasolic_screen.dart';
+import 'package:esp32_project_flutter_app/screens/vision.dart';
 
 void main() => runApp(FlashChat());
 
@@ -21,6 +22,7 @@ class FlashChat extends StatelessWidget {
         UltraScreen.id: (context) => UltraScreen(), //
         MLLabel.id: (context) => MLLabel(),
         MLHome.id: (context) => MLHome(),
+        Vision.id: (context) => Vision(),
         //MLDetail.id: (context) => MLDetail(),
       },
     );
