@@ -1,4 +1,3 @@
-import 'ml_home.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'dart:async';
@@ -25,10 +24,7 @@ class _MLDetailState extends State<MLDetail> {
   FirebaseVisionLabelDetector labelDetector =
       FirebaseVisionLabelDetector.instance;
   FirebaseVisionFaceDetector faceDetector = FirebaseVisionFaceDetector.instance;
-  List<VisionText> _currentTextLabels = <VisionText>[];
-  List<VisionBarcode> _currentBarcodeLabels = <VisionBarcode>[];
   List<VisionLabel> _currentLabelLabels = <VisionLabel>[];
-  List<VisionFace> _currentFaceLabels = <VisionFace>[];
 
   Stream sub;
   StreamSubscription<dynamic> subscription;
@@ -40,7 +36,6 @@ class _MLDetailState extends State<MLDetail> {
   void initState() {
     super.initState();
     sub = new Stream.empty();
-    subscription = sub.listen((_) => _getImageSize)..onDone(analyzeLabels);
   }
 
   void analyzeLabels() async {
@@ -89,27 +84,15 @@ class _MLDetailState extends State<MLDetail> {
     return Expanded(
       flex: 2,
       child: Container(
-          decoration: BoxDecoration(color: Colors.black),
-          child: Center(
+        decoration: BoxDecoration(color: Colors.black),
+        child: Center(
             child: widget._file == null
                 ? Text('No Image')
-                : FutureBuilder<Size>(
-                    future: _getImageSize(
-                        Image.file(widget._file, fit: BoxFit.fitWidth)),
-                    builder:
-                        (BuildContext context, AsyncSnapshot<Size> snapshot) {
-                      if (snapshot.hasData) {
-                        return Container(
-                            foregroundDecoration: LabelDetectDecoration(
-                                _currentLabelLabels, snapshot.data),
-                            child:
-                                Image.file(widget._file, fit: BoxFit.fitWidth));
-                      } else {
-                        return CircularProgressIndicator();
-                      }
-                    },
-                  ),
-          )),
+                : Image.file(
+                    widget._file,
+                    fit: BoxFit.fitWidth,
+                  )),
+      ),
     );
   }
 
@@ -178,14 +161,6 @@ class _MLDetailState extends State<MLDetail> {
     );
   }
 
-  Future<Size> _getImageSize(Image image) {
-    Completer<Size> completer = Completer<Size>();
-    /*image.image.resolve(ImageConfiguration()).addListener(
-        (ImageInfo info, bool _) => completer.complete(
-            Size(info.image.width.toDouble(), info.image.height.toDouble())));*/
-    return completer.future;
-  }
-
   Future _speak(String wordtosay) async {
     await flutterTts.speak(wordtosay);
   }
@@ -226,14 +201,5 @@ class _LabelDetectPainter extends BoxPainter {
     final _heightRatio = _originalImageSize.height / configuration.size.height;
     final _widthRatio = _originalImageSize.width / configuration.size.width;
     print("labels:${_labels}");
-    /*for (var label in _labels) {
-      final _rect = Rect.fromLTRB(
-          offset.dx + label.rect.left / _widthRatio,
-          offset.dy + label.rect.top / _heightRatio,
-          offset.dx + label.rect.right / _widthRatio,
-          offset.dy + label.rect.bottom / _heightRatio);
-      canvas.drawRect(_rect, paint);
-    }
-    canvas.restore();*/
   }
 }

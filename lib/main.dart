@@ -1,11 +1,6 @@
 import 'package:esp32_project_flutter_app/screens/ml_home.dart';
-import 'package:esp32_project_flutter_app/screens/ml_label.dart';
 import 'package:flutter/material.dart';
-import 'package:esp32_project_flutter_app/screens/welcome_screen.dart';
-import 'package:esp32_project_flutter_app/screens/login_screen.dart';
-import 'package:esp32_project_flutter_app/screens/registration_screen.dart';
 import 'package:esp32_project_flutter_app/screens/ultrasolic_screen.dart';
-import 'package:esp32_project_flutter_app/screens/vision.dart';
 
 void main() => runApp(FlashChat());
 
@@ -15,15 +10,9 @@ class FlashChat extends StatelessWidget {
     return MaterialApp(
       initialRoute: UltraScreen.id,
       routes: {
-        WelcomeScreen.id: (context) => WelcomeScreen(), //'/'
-        LoginScreen.id: (context) => LoginScreen(), //'/login'
-        RegistrationScreen.id: (context) =>
-            RegistrationScreen(), //'registration'
-        UltraScreen.id: (context) => UltraScreen(), //
-        MLLabel.id: (context) => MLLabel(),
-        MLHome.id: (context) => MLHome(),
-        Vision.id: (context) => Vision(),
-        //MLDetail.id: (context) => MLDetail(),
+        UltraScreen.id: (context) => UltraScreen(), //Ultrasonic sensor display
+        MLHome.id: (context) =>
+            MLHome(), //use machine learning kit to do image labeling
       },
     );
   }

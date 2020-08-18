@@ -1,9 +1,6 @@
-import 'package:esp32_project_flutter_app/screens/login_screen.dart';
-import 'package:esp32_project_flutter_app/screens/ml_label.dart';
 import 'package:flutter/material.dart';
 import 'package:esp32_project_flutter_app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:esp32_project_flutter_app/components/CircleProgress.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:esp32_project_flutter_app/ult.dart';
@@ -17,10 +14,10 @@ import 'dart:core';
 import 'ml_home.dart';
 import 'package:esp32_project_flutter_app/getname.dart';
 
-//import 'package:flutter_audio_player/flutter_audio_player.dart';
 typedef void OnError(Exception exception);
-//final _firestore = Firestore.instance;
+//planned to let user log in and register, but to reduce the operation, allow anonymous login
 FirebaseUser loggedInUser;
+//fetch data from Firebase realtime database
 DatabaseReference _distRef =
     FirebaseDatabase.instance.reference().child('ESP32_Device');
 
@@ -33,11 +30,10 @@ class UltraScreen extends StatefulWidget {
 
 class _UltraScreenState extends State<UltraScreen>
     with SingleTickerProviderStateMixin {
-  final messageTextController = TextEditingController();
+  //firebase autorization
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  //text to speech
   final FlutterTts flutterTts = FlutterTts();
-
-  String messageText;
 
   bool isLoading = false;
   AnimationController progressController;
@@ -57,7 +53,7 @@ class _UltraScreenState extends State<UltraScreen>
   bool _mute = true;
   double _oldreading = 0;
   bool _check = false;
-
+//camera enable
   bool camen = false;
 
   String personname;
@@ -69,7 +65,6 @@ class _UltraScreenState extends State<UltraScreen>
   @override
   void initState() {
     distWarnText = "Distance remind soon...";
-    //_distAudioName = 'audios/4m.m4a';
     _speech = stt.SpeechToText();
     initPlayer();
     _speak(
@@ -79,9 +74,7 @@ class _UltraScreenState extends State<UltraScreen>
         print("speak:$_distAudioName");
         print(_count.toString());
         print("speaktimes: $speaknametimes \npersonname:$personname");
-        //_listen();
-        //print('first: $_text');
-        //print(_text);
+        //if mutted, no voice message, else if distance changed then send voice message for five times
         if (!_mute) {
           print(_mute.toString());
           if (_distAudioName != "") {
@@ -94,8 +87,9 @@ class _UltraScreenState extends State<UltraScreen>
               speakdistimes++;
             }
           }
-
-          if (personname != "" && personname != "None") {
+          print("personname: $personname");
+          //if there is no person, no voice message, else if there's a person then send voice message for five times
+          if (personname != "" && personname != "None" && personname != null) {
             if (oldname != personname) {
               oldname = personname;
               speaknametimes = 0;
@@ -106,7 +100,6 @@ class _UltraScreenState extends State<UltraScreen>
             }
           }
         }
-        //audioCache.play(_distAudioName);
       });
     });
     super.initState();
@@ -146,18 +139,6 @@ class _UltraScreenState extends State<UltraScreen>
     }
   }
 
-//  void getDistance() async {
-//    double distances = await _firestore.collection('distance').snapshots();
-//  }
-
-//
-//  void messagesStream() async {
-//    await for (var snapshot in _firestore.collection('messages').snapshots()) {
-//      for (var message in snapshot.documents) {
-//        print(message.data);
-//      }
-//    }
-//  }
   _UltraScreenInit(double distance) {
     progressController = AnimationController(
         vsync: this, duration: Duration(milliseconds: 5000)); //5s
@@ -195,7 +176,6 @@ class _UltraScreenState extends State<UltraScreen>
                 children: <Widget>[
                   Container(
                     height: 30,
-                    //child: _buildAudioPlay(),
                   ),
                   Expanded(
                     child: StreamBuilder(
@@ -206,34 +186,32 @@ class _UltraScreenState extends State<UltraScreen>
                             snapshot.data.snapshot.value != null) {
                           print(
                               "snapshot data:${snapshot.data.snapshot.value.toString()}");
-
+                          //get distance data from Firebase and parse Json data
                           var _dist = ULT.fromJson(
                               snapshot.data.snapshot.value['Distance']);
                           print("Distance: ${_dist.data}");
                           print(
                               "matper:${snapshot.data.snapshot.value['MatchPerson']}");
+                          //get the person name in front of the camera
                           if (snapshot.data.snapshot.value['MatchPerson'] !=
                               null) {
                             var person = CAM.fromJson(
                                 snapshot.data.snapshot.value['MatchPerson']);
                             personname = person.data;
                           }
-
+                          //send voice message if the distance change more than ten
                           if ((_dist.data - _oldreading).abs() >= 10) {
                             _oldreading = _dist.data;
-                            //_mute = false;
                           }
                           _setAudioName(_dist);
+                          //sen voice message if the person appear in front ofthe camera
                           if (personname != "" &&
                               personname != "None" &&
+                              personname != null &&
                               speaknametimes >= 5) {
                             _distRef.child('MatchPerson').remove();
                             oldname = "";
                           }
-                          //print(_distAudioName);
-                          //_buildAudioPlay();
-                          //_listen();
-                          //print(_text);
                           return _distanceLayout(_dist);
                         } else {
                           return Center(
@@ -244,7 +222,7 @@ class _UltraScreenState extends State<UltraScreen>
                     ),
                   ),
                   Text(
-                    personname == null ? "None" : personname,
+                    personname == null ? "" : personname,
                     style: kPersonnameDecoration,
                   ),
                 ],
@@ -257,6 +235,7 @@ class _UltraScreenState extends State<UltraScreen>
     );
   }
 
+  //display distance with animation
   Widget _distanceLayout(ULT _ult) {
     return Center(
       child: Column(
@@ -309,9 +288,6 @@ class _UltraScreenState extends State<UltraScreen>
                     onPressed: () {
                       onCameraenable();
                       Navigator.pushNamed(context, MLHome.id);
-                      /*setState(() {
-                        _check = !_check;
-                      });*/
                     },
                     tooltip: 'Check',
                     child: Icon(MaterialCommunityIcons.camera),
@@ -348,29 +324,27 @@ class _UltraScreenState extends State<UltraScreen>
     );
   }
 
+  //check the distance range to send different voice message
   _setAudioName(ULT _ult) async {
     if (_ult.data > 300.0 && _ult.data < 400.0) {
       _distAudioName = "4m range, tap bottom right button to mute";
-      //_distAudioName = '4mr.mp3';
     } else if (_ult.data >= 200.0 && _ult.data <= 300.0) {
       _distAudioName = "3m range, tap bottom right button to mute";
-      //_distAudioName = '3mr.mp3';
     } else if (_ult.data >= 100.0 && _ult.data < 200.0) {
       _distAudioName = "2m range, tap bottom right button to mute";
-      //_distAudioName = '2mr.mp3';
     } else if (_ult.data > 0.0 && _ult.data < 100.0) {
       _distAudioName = "1m range, tap bottom right button to mute";
-      //_distAudioName = '1mr.mp3';
     } else {
       _distAudioName = "unknown, tap bottom right button to mute";
     }
-    //await audioCache.play(_distAudioName);
   }
 
+  //convert text to speech
   Future _speak(String wordtosay) async {
     await flutterTts.speak(wordtosay);
   }
 
+  //for future convert speech to text
   void _listen() async {
     if (!_isListening) {
       bool available = await _speech.initialize(
@@ -398,6 +372,7 @@ class _UltraScreenState extends State<UltraScreen>
     }
   }
 
+  //camera enable
   void onCameraenable() {
     setState(() {
       camen = !camen;
@@ -406,61 +381,5 @@ class _UltraScreenState extends State<UltraScreen>
     _distRef.child("camen").set({
       'camen': camen,
     });
-  }
-
-//  Future<dynamic> _buildAudioPlay() async {
-//    print(_distAudioName);
-//    return AudioPlayer.addSound(_distAudioName);
-//  }
-}
-
-class MessageBubble extends StatelessWidget {
-  MessageBubble({this.sender, this.text, this.isMe});
-
-  final String sender;
-  final String text;
-  final bool isMe;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(10.0),
-      child: Column(
-        crossAxisAlignment:
-            isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        children: <Widget>[
-          Text(
-            sender,
-            style: TextStyle(
-              fontSize: 12.0,
-              color: Colors.black54,
-            ),
-          ),
-          Material(
-            borderRadius: isMe
-                ? BorderRadius.only(
-                    topLeft: Radius.circular(30.0),
-                    bottomLeft: Radius.circular(30.0),
-                    bottomRight: Radius.circular(30.0))
-                : BorderRadius.only(
-                    topRight: Radius.circular(30.0),
-                    bottomLeft: Radius.circular(30.0),
-                    bottomRight: Radius.circular(30.0)),
-            elevation: 5.0,
-            color: isMe ? Colors.lightBlueAccent : Colors.white,
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-              child: Text(
-                text,
-                style: TextStyle(
-                  color: isMe ? Colors.white : Colors.black54,
-                  fontSize: 15.0,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
