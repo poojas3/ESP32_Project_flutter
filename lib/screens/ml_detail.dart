@@ -36,6 +36,7 @@ class _MLDetailState extends State<MLDetail> {
   void initState() {
     super.initState();
     sub = new Stream.empty();
+    subscription = sub.listen((_) => _getImageSize)..onDone(analyzeLabels);
   }
 
   void analyzeLabels() async {
@@ -74,7 +75,7 @@ class _MLDetailState extends State<MLDetail> {
             buildImage(context),
             buildBarcodeList<VisionLabel>(_currentLabelLabels),
             Text(
-              strspeech != null ? strspeech : "no data yet",
+              strspeech != null ? strspeech : "",
             ),
           ],
         ));
@@ -86,12 +87,26 @@ class _MLDetailState extends State<MLDetail> {
       child: Container(
         decoration: BoxDecoration(color: Colors.black),
         child: Center(
-            child: widget._file == null
-                ? Text('No Image')
-                : Image.file(
-                    widget._file,
-                    fit: BoxFit.fitWidth,
-                  )),
+          child: widget._file == null
+              ? Text('No Image')
+              : FutureBuilder<Size>(
+                  future: _getImageSize(
+                      Image.file(widget._file, fit: BoxFit.fitWidth)),
+                  builder:
+                      (BuildContext context, AsyncSnapshot<Size> snapshot) {
+                    if (snapshot.hasData) {
+                      return Container(
+                          foregroundDecoration: LabelDetectDecoration(
+                              _currentLabelLabels, snapshot.data),
+                          child:
+                              Image.file(widget._file, fit: BoxFit.fitWidth));
+                    } else {
+                      return Image.file(widget._file,
+                          fit: BoxFit.fitWidth); //CircularProgressIndicator();
+                    }
+                  },
+                ),
+        ),
       ),
     );
   }
@@ -159,6 +174,14 @@ class _MLDetailState extends State<MLDetail> {
       ),
       dense: true,
     );
+  }
+
+  Future<Size> _getImageSize(Image image) {
+    Completer<Size> completer = Completer<Size>();
+    /*image.image.resolve(ImageConfiguration()).addListener(
+        (ImageInfo info, bool _) => completer.complete(
+            Size(info.image.width.toDouble(), info.image.height.toDouble())));*/
+    return completer.future;
   }
 
   Future _speak(String wordtosay) async {
