@@ -13,6 +13,7 @@ import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'dart:core';
 import 'ml_home.dart';
 import 'package:esp32_project_flutter_app/getname.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 typedef void OnError(Exception exception);
 //planned to let user log in and register, but to reduce the operation, allow anonymous login
@@ -48,7 +49,7 @@ class _UltraScreenState extends State<UltraScreen>
   int _count = 0;
   stt.SpeechToText _speech;
   bool _isListening = false;
-  String _text = "try";
+  String _text;
   double _confidence = 1.0;
   bool _mute = true;
   double _oldreading = 0;
@@ -82,7 +83,7 @@ class _UltraScreenState extends State<UltraScreen>
               olddistance = _distAudioName;
               speakdistimes = 0;
             }
-            if (speakdistimes < 5) {
+            if (speakdistimes < 3) {
               _speak(_distAudioName);
               speakdistimes++;
             }
@@ -94,7 +95,7 @@ class _UltraScreenState extends State<UltraScreen>
               oldname = personname;
               speaknametimes = 0;
             }
-            if (speaknametimes < 5) {
+            if (speaknametimes < 3) {
               _speak("Hello $personname");
               speaknametimes++;
             }
@@ -198,7 +199,10 @@ class _UltraScreenState extends State<UltraScreen>
                             var person = CAM.fromJson(
                                 snapshot.data.snapshot.value['MatchPerson']);
                             personname = person.data;
+                          } else {
+                            personname = "";
                           }
+
                           //send voice message if the distance change more than ten
                           if ((_dist.data - _oldreading).abs() >= 10) {
                             _oldreading = _dist.data;
@@ -208,10 +212,16 @@ class _UltraScreenState extends State<UltraScreen>
                           if (personname != "" &&
                               personname != "None" &&
                               personname != null &&
-                              speaknametimes >= 5) {
-                            _distRef.child('MatchPerson').remove();
+                              speaknametimes >= 3) {
                             oldname = "";
+                            personname = "";
+                            speaknametimes = 0;
+                            _distRef.child('MatchPerson').remove();
                           }
+
+//                          if (_text == "Help") {
+//                            launch("tel:+16399988658");
+//                          }
                           return _distanceLayout(_dist);
                         } else {
                           return Center(
